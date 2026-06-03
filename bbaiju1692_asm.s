@@ -20,4 +20,20 @@ bbaiju1692_add_test:
     bx lr
     .size   bbaiju1692_add_test, .- bbaiju1692_add_test
 @ Assembly file ended by single .end directive on its own line
+
+@ Function Declaration : int busy_delay(int cycles)
+@
+@ Input: r0 (i.e. r0 holds number of cycles to delay)
+@ Returns: r0
+@ 
+@ Here is the actual function. DO NOT MODIFY THIS FUNCTION.
+busy_delay:
+    push {r6}
+    mov r6, r0
+delay_label:
+    subs r6, r6, #1
+    bge delay_label
+    mov r0, #0                      @ Always return zero (success)
+    pop {r6}
+    bx lr                           @ Return (Branch eXchange) to the address in the link register (lr)
 .end
