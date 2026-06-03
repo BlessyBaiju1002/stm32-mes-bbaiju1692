@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include "common.h"
 
-int bbaiju1692_add_test(int x, int y);
+int bbaiju1692_add_test(int x, int y, uint32_t delay);
 
 void AddTest(int action)
 {
@@ -18,7 +18,16 @@ void AddTest(int action)
        );
     return;
   }
-  printf("bbaiju1692_add_test returned: %d\n", bbaiju1692_add_test(99, 87) );
+
+  uint32_t delay;
+  int fetch_status;
+  fetch_status = fetch_uint32_arg(&delay);
+  if(fetch_status) {
+    // Use a default delay value
+    delay = 0xFFFFFF;
+  }
+
+  printf("bbaiju1692_add_test returned: %d\n", bbaiju1692_add_test(99, 87, delay) );
 }
 
 ADD_CMD("bbaiju1692_add", AddTest,"Test the new add function")

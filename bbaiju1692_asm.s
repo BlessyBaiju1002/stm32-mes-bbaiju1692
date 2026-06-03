@@ -18,13 +18,13 @@
 bbaiju1692_add_test:
     push {lr}           @ Save LR because we will call another function
     add r0, r0, r1      @ Add x + y, result is in r0
-    push {r0}           @ Save the addition result before calling delay
-    ldr r0, =0xFFFFFF   @ Load the delay value 0xFFFFFF into r0
-    bl busy_delay       @ Call busy_delay with that value
-    pop {r0}            @ Restore the addition result into r0
+    push {r0}           @ Save the addition result
+    mov r0, r2          @ Move delay parameter (r2) into r0 for busy_delay
+    bl busy_delay       @ Call busy_delay with the delay value
+    pop {r0}            @ Restore the addition result
     pop {pc}            @ Restore and return
     .size   bbaiju1692_add_test, .- bbaiju1692_add_test
-
+    
 @ Function Declaration : int busy_delay(int cycles)
 @
 @ Input: r0 (i.e. r0 holds number of cycles to delay)
