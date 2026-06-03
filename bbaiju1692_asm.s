@@ -16,10 +16,14 @@
 @ 
 @ Here is the actual bbaiju1692_add_test function
 bbaiju1692_add_test:
-    add r0, r0, r1
-    bx lr
+    push {lr}           @ Save LR because we will call another function
+    add r0, r0, r1      @ Add x + y, result is in r0
+    push {r0}           @ Save the addition result before calling delay
+    ldr r0, =0xFFFFFF   @ Load the delay value 0xFFFFFF into r0
+    bl busy_delay       @ Call busy_delay with that value
+    pop {r0}            @ Restore the addition result into r0
+    pop {pc}            @ Restore and return
     .size   bbaiju1692_add_test, .- bbaiju1692_add_test
-@ Assembly file ended by single .end directive on its own line
 
 @ Function Declaration : int busy_delay(int cycles)
 @
@@ -36,4 +40,7 @@ delay_label:
     mov r0, #0                      @ Always return zero (success)
     pop {r6}
     bx lr                           @ Return (Branch eXchange) to the address in the link register (lr)
+
+@Assembly file ended by single .end directive on its own line
+
 .end
