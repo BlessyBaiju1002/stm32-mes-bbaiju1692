@@ -29,6 +29,22 @@ count:  .word 12345                     @ This is an initialized 32 bit value
 @ 
 @ Here is the actual bbaiju1692_add_test function
 bbaiju1692_add_test:
+    bkpt
+    @ Load the addresses of each of our items
+    ldr r0, =num
+    ldr r0, =big
+    ldr r0, =huge
+    ldr r0, =str2
+    ldr r2, =str2			@ Load the address of str2 and store it in r2
+    ldrb r0, [r2]			@ Load the value stored at the address str2 as a byte
+    ldr r2, =str2			@ Load the address of str2 and store it in r2
+    ldr r0, [r2]			@ Load the value stored at the address str2 as a word
+    ldr r2, =num			@ Load the address of num and store it in r2
+    ldrb r0, [r2]			@ Load the value stored at the address num
+    ldr r2, =big			@ Load the address of big
+    ldr r0, [r2]			@ Load the value of big
+    ldr r2, =huge			@ Load the address of huge
+    ldrd r0, r1, [r2]		@ Load the value of huge
     push {lr}           @ Save LR because we will call another function
     add r0, r0, r1      @ Add x + y, result is in r0
     push {r0}           @ Save the addition result
