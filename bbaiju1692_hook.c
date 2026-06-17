@@ -31,3 +31,25 @@ void AddTest(int action)
 }
 
 ADD_CMD("bbaiju1692_add", AddTest,"Test the new add function")
+
+int bbaiju1692_string_test(char *p);
+
+void bbaiju1692_StringTest(int action)
+{
+  if(action==CMD_SHORT_HELP) return;
+  if(action==CMD_LONG_HELP) {
+    printf("String Test\n\n"
+	   "This command tests new string function by bbaiju1692\n"
+	   );
+    return;
+  }
+  int fetch_status;
+  char *destptr;
+  fetch_status = fetch_string_arg(&destptr);
+  if (fetch_status) {
+    // Default logic goes here
+  }
+  printf("string_test returned: %d\n", bbaiju1692_string_test(destptr) );
+}
+
+ADD_CMD("bbaiju1692_string", bbaiju1692_StringTest,"Test the new string function")
