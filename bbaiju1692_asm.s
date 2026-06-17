@@ -53,7 +53,18 @@ bbaiju1692_add_test:
     pop {r0}            @ Restore the addition result
     pop {pc}            @ Restore and return
     .size   bbaiju1692_add_test, .- bbaiju1692_add_test
-    
+
+.global bbaiju1692_string_test
+@ Function Declaration : int bbaiju1692_string_test(char *p)
+@
+@ Input: r0 (i.e. r0 a pointer to a byte array)
+@ Returns: r0
+@ 
+@ Here is the actual function
+bbaiju1692_string_test:
+    bx lr
+    .size   bbaiju1692_string_test, .-bbaiju1692_string_test
+
 @ Function Declaration : int busy_delay(int cycles)
 @
 @ Input: r0 (i.e. r0 holds number of cycles to delay)
