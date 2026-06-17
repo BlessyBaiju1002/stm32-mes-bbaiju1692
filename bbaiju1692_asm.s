@@ -1,3 +1,16 @@
+@ bbaiju1692_asm.s Data section - initialized values
+.data
+.align 3    @ This alignment is critical - to access our "huge" value, it must
+            @ be 64 bit aligned
+huge:   .octa 0xAABBCCDDDDCCBBFF
+big:    .word 0xAAEEBBFF
+num:    .byte 0xAB
+str2:   .asciz "Guten Tag!"
+count:  .word 12345                     @ This is an initialized 32 bit value
+@ End of new data section
+
+
+
 @ Test code for my own new function called from C
 @ This is a comment. Anything after an @ symbol is ignored.
 @@ This is also a comment. Some people use double @@ symbols. 
