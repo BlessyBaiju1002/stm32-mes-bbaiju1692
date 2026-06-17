@@ -62,9 +62,15 @@ bbaiju1692_add_test:
 @ 
 @ Here is the actual function
 bbaiju1692_string_test:
-    bx lr
+StringLoop:
+    ldrb r1, [r0]                    @ Dereference the character r0 points to
+    cmp r1, #0                       @ Check if that value is zero
+    beq OutLabel                     @ If it is, branch out
+    add r0, r0, #1                   @ Add one to R0
+    b StringLoop                     @ Branch back to string loop
+OutLabel:
+    bx lr                            @ Return the value of R0
     .size   bbaiju1692_string_test, .-bbaiju1692_string_test
-
 @ Function Declaration : int busy_delay(int cycles)
 @
 @ Input: r0 (i.e. r0 holds number of cycles to delay)
