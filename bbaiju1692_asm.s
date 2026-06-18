@@ -68,10 +68,43 @@ bbaiju1692_add_test:
 @ Returns: r0 holds the total count of LED toggles
 @ 
 @ Here is the assignment 2 assembly function
+
 bbaiju1692_a2:
-    @ Fill in the necessary logic here
-    bx lr                           @ Return (Branch eXchange) to the address held by the lr 
-    .size   bbaiju1692_a2, .- bbaiju1692_a2    @@ - symbol size (makes the debugger happy)
+    push {lr}              @ Save link register since we will call other functions
+    push {r4, r5, r6, r7}  @ Save registers we will use, so we don't break anything else
+    mov r4, r0             @ r4 = num (how many times to repeat the full LED cycle)
+    mov r5, r1             @ r5 = wait (the delay value between each LED toggle)
+    mov r6, #0             @ r6 = our counter of total LED toggles, starts at 0
+
+RepeatLoop:
+    cmp r4, #0              @ Check if num (repeats left) is zero
+    beq DoneRepeat           @ If zero, all repeats are finished, go to the end
+
+    mov r7, #3               @ r7 = current LED index, start at LED 3 (first LED)
+
+LedLoop:
+    cmp r7, #11               @ Check if we have gone past the last LED (index 10)
+    beq EndLedLoop              @ If so, this cycle of 8 LEDs is done
+
+    mov r0, r7                  @ Move the current LED index into r0 for the function call
+    bl BSP_LED_Toggle             @ Toggle this LED (turns it ON if OFF, or OFF if ON)
+    add r6, r6, #1                @ Add 1 to our total toggle counter
+
+    mov r0, r5                     @ Move our saved wait value into r0 for busy_delay
+    bl busy_delay                    @ Wait the requested delay before the next LED
+
+    add r7, r7, #1                    @ Move to the next LED index
+    b LedLoop                          @ Go back and check the next LED
+
+EndLedLoop:
+    sub r4, r4, #1               @ Subtract 1 from our repeat counter (one cycle finished)
+    b RepeatLoop                  @ Go back and check if more repeats are needed
+
+DoneRepeat:
+    mov r0, r6                     @ Put our total toggle count into r0 to return it
+    pop {r4, r5, r6, r7}             @ Restore the registers we used back to their old values
+    pop {pc}                          @ Restore lr into pc, which returns from the function
+    .size   bbaiju1692_a2, .- bbaiju1692_a2
 
 
 .global bbaiju1692_string_test
