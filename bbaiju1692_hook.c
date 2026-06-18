@@ -53,3 +53,36 @@ void bbaiju1692_StringTest(int action)
 }
 
 ADD_CMD("bbaiju1692_string", bbaiju1692_StringTest,"Test the new string function")
+
+int bbaiju1692_a2(int num, int wait);
+
+// Assignment 2 C Hook Function
+//
+void _bbaiju1692_Assignment2(int action)
+{
+  if(action==CMD_SHORT_HELP) return;
+  if(action==CMD_LONG_HELP) {
+    printf("Assignment 2\n\n"
+	   "This command triggers assignment 2 by bbaiju1692\n"
+	   );
+    return;
+  }
+  uint32_t num_input;
+  uint32_t wait_input;
+  int fetch_status;
+
+  fetch_status = fetch_uint32_arg(&num_input);
+  if(fetch_status) {
+  	// Use a default value
+  	num_input = 1;
+  }
+
+  fetch_status = fetch_uint32_arg(&wait_input);
+  if(fetch_status) {
+  	// Use a default value
+  	wait_input = 0xFFFFEF;
+  }
+
+  printf("bbaiju1692_a2 returned: %d\n", bbaiju1692_a2 (num_input, wait_input) );
+}
+ADD_CMD("bbaiju1692_a2", _bbaiju1692_Assignment2, "Assignment 2")
