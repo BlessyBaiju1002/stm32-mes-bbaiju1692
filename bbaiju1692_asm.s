@@ -54,6 +54,26 @@ bbaiju1692_add_test:
     pop {pc}            @ Restore and return
     .size   bbaiju1692_add_test, .- bbaiju1692_add_test
 
+
+@@ Function Header Block
+    .align  2               @ Code alignment is 2^n alignment (n=2)
+    .syntax unified         @ Sets the instruction set to the unified ARM + THUMB
+    .global bbaiju1692_a2   @ Make the symbol name for the function visible to the linker
+    .code   16              @ 16bit THUMB code (BOTH .code and .thumb_func are required)
+    .thumb_func             @ Specifies that the following symbol is the name of a THUMB
+    .type   bbaiju1692_a2, %function   @ Declares that the symbol is a function (not strictly required)
+@ Function Declaration : int bbaiju1692_a2 (int num, int wait)
+@
+@ Input: r0 holds num (number of repeats), r1 holds wait (delay value)
+@ Returns: r0 holds the total count of LED toggles
+@ 
+@ Here is the assignment 2 assembly function
+bbaiju1692_a2:
+    @ Fill in the necessary logic here
+    bx lr                           @ Return (Branch eXchange) to the address held by the lr 
+    .size   bbaiju1692_a2, .- bbaiju1692_a2    @@ - symbol size (makes the debugger happy)
+
+
 .global bbaiju1692_string_test
 @ Function Declaration : int bbaiju1692_string_test(char *p)
 @
