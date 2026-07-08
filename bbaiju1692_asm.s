@@ -32,17 +32,47 @@
 @ 
 
 @ Here is the actual bbaiju1692_lab6 function
+@ Input:   r0 = delay value from user
+@ Returns: r0 = total number of LED toggles performed
+@
 bbaiju1692_lab6:
-    push {lr}
+    push {r4, r5, r6, lr}  @ Save registers and return address
 
-    @ These lines just show that the code is working
-    ldr r0, =0xFFFFFF
-    bl busy_delay
+    mov r4, r0             @ Save delay value safely in r4
+    mov r5, #7             @ Set loop index to 7 (start from LED 7)
+    mov r6, #0             @ Set toggle counter to 0
 
-    pop {lr}
-    bx lr                           @ Return (Branch eXchange) to the address in the link register (lr) 
-    .size   bbaiju1692_lab6, .-bbaiju1692_lab6    @@ - symbol size (not strictly required, but makes the debugger happy)
+bbaiju1692_loop:
+    @ Check if loop index is less than zero
+    cmp r5, #0             @ Compare loop index with 0
+    bge bbaiju1692_skip    @ If >= 0, skip reset
+    mov r5, #7             @ Else reset loop index back to 7
 
+bbaiju1692_skip:
+    @ Toggle the LED at current loop index
+    mov r0, r5             @ Put loop index into r0 (parameter for BSP_LED_Toggle)
+    bl BSP_LED_Toggle      @ Toggle that LED
+
+    add r6, r6, #1         @ Increment toggle counter
+    sub r5, r5, #1         @ Decrement loop index
+
+    @ Delay for the amount of time given by user
+    mov r0, r4             @ Put delay value back into r0
+    bl busy_delay          @ Call delay function
+
+    @ Check if button is pressed
+    mov r0, #0             @ 0 = user button
+    bl BSP_PB_GetState     @ Call button read function
+                           @ r0 = 0 means NOT pressed, non-zero means PRESSED
+
+    cmp r0, #0             @ Is button pressed?
+    beq bbaiju1692_loop    @ If NOT pressed (r0==0), go back to loop
+                           @ If pressed, fall through and exit
+
+bbaiju1692_done:
+    mov r0, r6             @ Put toggle counter into r0 as return value
+    pop {r4, r5, r6, lr}   @ Restore registers
+    bx lr                  @ Return to C
 
 .global bbaiju1692_a3
 .type   bbaiju1692_a3, %function
