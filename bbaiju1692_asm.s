@@ -111,6 +111,24 @@ busy_delay:
 
 
 @ Assembly file ended by single .end directive on its own line
-.end
 
-Things past the end directive are not processed, as you can see here.
+@@ Function Header Block - Lab 7
+    .global bbaiju1692_lab7
+    .type   bbaiju1692_lab7, %function
+
+@ Function Declaration: int bbaiju1692_lab7(int delay)
+@ Input:   r0 = delay value
+@ Returns: r0 = 0
+@
+@ Here is the actual bbaiju1692_lab7 function
+bbaiju1692_lab7:
+    push {lr}          @ Save return address
+
+    bl busy_delay      @ Delay (r0 already has delay value)
+
+    mov r0, #0         @ Return 0
+    pop {lr}           @ Restore return address
+    bx lr              @ Return to C
+
+    .size bbaiju1692_lab7, .-bbaiju1692_lab7
+.end
