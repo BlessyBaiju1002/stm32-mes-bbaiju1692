@@ -84,10 +84,79 @@ bbaiju1692_done:
 @ 
 
 @ Here is the function
+@ Function Declaration: int bbaiju1692_a3(int wait, char *pattern, int num)
+@
+@ Input:
+@   r0 = wait    (delay value between each LED toggle)
+@   r1 = pattern (pointer to LED pattern string)
+@   r2 = num     (number of times to repeat pattern)
+@
+@ Returns:
+@   r0 = total number of BSP_LED_Toggle calls made
+@
+@ What this function does:
+@   Reads pattern string character by character
+@   Converts each char to LED number (ASCII - 48)
+@   Toggles that LED and delays
+@   Checks button after each toggle
+@   Repeats num times or until button pressed
+@
 bbaiju1692_a3:
+    push {r4, r5, r6, r7, r8, lr}  @ Save registers
 
-    bx lr
-    .size   bbaiju1692_a3, .-bbaiju1692_a3
+    @ Save parameters safely
+    mov r4, r0             @ r4 = wait (delay value)
+    mov r5, r1             @ r5 = pattern pointer (start)
+    mov r6, r2             @ r6 = num (repeat counter)
+    mov r7, #0             @ r7 = toggle counter (starts at 0)
+
+bbaiju1692_a3_repeat:
+    @ Check if repeat counter is zero
+    cmp r6, #0             @ Have we done all repeats?
+    ble bbaiju1692_a3_done @ If yes, exit
+
+    mov r8, r5             @ r8 = current position in pattern
+                           @      reset to start for each repeat
+
+bbaiju1692_a3_loop:
+    @ Read one character from pattern string
+    ldrb r0, [r8]          @ Load byte at current pattern position
+    cmp r0, #0             @ Is it end of string (null terminator)?
+    beq bbaiju1692_a3_next_repeat  @ Yes → go to next repeat
+
+    @ Convert ASCII character to LED number
+    sub r0, r0, #48        @ Subtract 48 to convert ASCII to number
+                           @ e.g. '1'(49) - 48 = 1, '2'(50) - 48 = 2
+
+    @ Toggle the LED
+    bl BSP_LED_Toggle      @ Toggle LED number in r0
+
+    add r7, r7, #1         @ Increment toggle counter
+
+    @ Delay between toggles
+    mov r0, r4             @ Put delay value into r0
+    bl busy_delay          @ Call delay function
+
+    @ Check if button is pressed
+    mov r0, #0             @ 0 = user button
+    bl BSP_PB_GetState     @ Read button state
+    cmp r0, #0             @ Is button pressed?
+    bne bbaiju1692_a3_done @ Yes → exit immediately
+
+    @ Move to next character in pattern
+    add r8, r8, #1         @ Increment pattern pointer
+    b bbaiju1692_a3_loop   @ Go back to read next character
+
+bbaiju1692_a3_next_repeat:
+    @ Finished one full pattern cycle
+    sub r6, r6, #1         @ Decrement repeat counter
+    b bbaiju1692_a3_repeat @ Go back to start of repeat
+
+bbaiju1692_a3_done:
+    @ Return total toggle count
+    mov r0, r7             @ Put toggle counter in r0
+    pop {r4, r5, r6, r7, r8, lr}  @ Restore registers
+    bx lr                  @ Return to C
 
 @ Function Declaration: int busy_delay(int cycles)
 @
