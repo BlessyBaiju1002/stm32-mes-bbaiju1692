@@ -132,10 +132,9 @@ bbaiju1692_a3_loop:
     bgt bbaiju1692_a3_skip_led  @ Yes → skip this character
 
     bl BSP_LED_Toggle      @ Toggle that LED (only valid 0-7)
+    add r7, r7, #1         @ Count ONLY valid toggles
 
 bbaiju1692_a3_skip_led:
-    
-    add r7, r7, #1         @ Increment toggle counter
 
     @ Delay between toggles
     mov r0, r4             @ Put delay value into r0
