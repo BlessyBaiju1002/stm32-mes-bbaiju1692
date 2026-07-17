@@ -124,13 +124,17 @@ bbaiju1692_a3_loop:
     cmp r0, #0             @ Is it end of string (null terminator)?
     beq bbaiju1692_a3_next_repeat  @ Yes → go to next repeat
 
-    @ Convert ASCII character to LED number
-    sub r0, r0, #48        @ Subtract 48 to convert ASCII to number
-                           @ e.g. '1'(49) - 48 = 1, '2'(50) - 48 = 2
+        sub r0, r0, #48        @ Convert ASCII to LED number
+                           @ e.g. '1'(49)-48=1, 'Q'(81)-48=33
 
-    @ Toggle the LED
-    bl BSP_LED_Toggle      @ Toggle LED number in r0
+    @ Skip if LED number is out of valid range (0-7)
+    cmp r0, #7             @ Is LED number greater than 7?
+    bgt bbaiju1692_a3_skip_led  @ Yes → skip this character
 
+    bl BSP_LED_Toggle      @ Toggle that LED (only valid 0-7)
+
+bbaiju1692_a3_skip_led:
+    
     add r7, r7, #1         @ Increment toggle counter
 
     @ Delay between toggles
