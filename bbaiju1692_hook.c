@@ -30,35 +30,60 @@ void Lab6_bbaiju1692(int action)
 
 ADD_CMD("bbaiju1692_lab6", Lab6_bbaiju1692,"Test the new lab 6 function")
 
-int bbaiju1692_a3(char *pattern_ptr);
+/*
+ * bbaiju1692_a3 assembly function declaration
+ * Parameters:
+ *   wait    = delay between each LED toggle
+ *   pattern = string of LED numbers to blink
+ *   num     = how many times to repeat pattern
+ * Returns: total number of BSP_LED_Toggle calls
+ */
+int bbaiju1692_a3(int wait, char *pattern, int num);
 
+/*
+ * A3_bbaiju1692 - Blinking lights game
+ * Usage: bbaiju1692_a3 <wait> <pattern> <num>
+ *   wait    = delay value (e.g. 0xFFFFF)
+ *   pattern = LED pattern string (e.g. 11234)
+ *   num     = number of repeats (e.g. 5)
+ */
 void A3_bbaiju1692(int action)
 {
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Assignment 3 - Blinking Lights by bbaiju1692\n\n"
+               "Usage: bbaiju1692_a3 <wait> <pattern> <num>\n"
+               "  wait    = delay between toggles\n"
+               "  pattern = LED numbers to blink\n"
+               "  num     = number of repeats\n"
+               );
+        return;
+    }
 
-  if(action==CMD_SHORT_HELP) return;
-  if(action==CMD_LONG_HELP) {
-    printf("Assignment 3 Test\n\n"
-	   "This is the A3 function by bbaiju1692\n"
-	   );
+    int wait;
+    char *pattern;
+    int num;
 
-    return;
-  }
+    /* Get wait (delay) value from user */
+    if(fetch_uint32_arg((uint32_t *)&wait)) {
+        wait = 0xFFFFF;  /* Default delay */
+    }
 
-  int fetch_status;
-  char *pattern;
+    /* Get pattern string from user */
+    if(fetch_string_arg(&pattern)) {
+        pattern = "1234";  /* Default pattern */
+    }
 
-  fetch_status = fetch_string_arg(&pattern);
+    /* Get num (repeat count) from user */
+    if(fetch_uint32_arg((uint32_t *)&num)) {
+        num = 3;  /* Default repeats */
+    }
 
-  if (fetch_status) {
-    // Default logic goes here
-    pattern = "Test Pattern";
-  }
-
-  printf("bbaiju1692_a3 returned: %d\n", bbaiju1692_a3(pattern) );
+    /* Call assembly function — NO logic in C! */
+    printf("bbaiju1692_a3 returned: %d\n",
+        bbaiju1692_a3(wait, pattern, num));
 }
-
-ADD_CMD("bbaiju1692_a3", A3_bbaiju1692,"Run A3 for bbaiju1692")
-
+ADD_CMD("bbaiju1692_a3", A3_bbaiju1692, "Run A3 for bbaiju1692")
 
 /* Declaration for lab 7 assembly function */
 int bbaiju1692_lab7(int delay);
