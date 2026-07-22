@@ -1,87 +1,158 @@
 /*
  *  C to assembler menu hook
+ *
+ *  Modified by bbaiju1692
  * 
  */
+
 #include <stdio.h>
 #include <stdint.h>
+#include "stm32f3_discovery_gyroscope.h"
 #include <ctype.h>
+
 #include "common.h"
 
-int bbaiju1692_add_test(int x, int y, uint32_t delay);
+int bbaiju1692_lab6(int x, int y);
 
-void AddTest(int action)
+void Lab6_bbaiju1692(int action)
 {
+
   if(action==CMD_SHORT_HELP) return;
   if(action==CMD_LONG_HELP) {
-    printf("Addition Test\n\n"
-       "This command tests new addition function by bbaiju1692\n"
-       );
-    return;
-  }
-
-  uint32_t delay;
-  int fetch_status;
-  fetch_status = fetch_uint32_arg(&delay);
-  if(fetch_status) {
-    // Use a default delay value
-    delay = 0xFFFFFF;
-  }
-
-  printf("bbaiju1692_add_test returned: %d\n", bbaiju1692_add_test(99, 87, delay) );
-}
-
-ADD_CMD("bbaiju1692_add", AddTest,"Test the new add function")
-
-int bbaiju1692_string_test(char *p);
-
-void bbaiju1692_StringTest(int action)
-{
-  if(action==CMD_SHORT_HELP) return;
-  if(action==CMD_LONG_HELP) {
-    printf("String Test\n\n"
-	   "This command tests new string function by bbaiju1692\n"
+    printf("Lab 6\n\n"
+	   "This command tests new lab 6 function by bbaiju1692\n"
 	   );
+
     return;
   }
-  int fetch_status;
-  char *destptr;
-  fetch_status = fetch_string_arg(&destptr);
-  if (fetch_status) {
-    // Default logic goes here
-  }
-  printf("string_test returned: %d\n", bbaiju1692_string_test(destptr) );
+  printf("bbaiju1692_lab6 returned: %d\n", bbaiju1692_lab6(99, 87) );
 }
 
-ADD_CMD("bbaiju1692_string", bbaiju1692_StringTest,"Test the new string function")
+ADD_CMD("bbaiju1692_lab6", Lab6_bbaiju1692,"Test the new lab 6 function")
 
-int bbaiju1692_a2(int num, int wait);
+/*
+ * bbaiju1692_a3 assembly function declaration
+ * Parameters:
+ *   wait    = delay between each LED toggle
+ *   pattern = string of LED numbers to blink
+ *   num     = how many times to repeat pattern
+ * Returns: total number of BSP_LED_Toggle calls
+ */
+int bbaiju1692_a3(int wait, char *pattern, int num);
 
-// Assignment 2 C Hook Function
-//
-void _bbaiju1692_Assignment2(int action)
+/*
+ * A3_bbaiju1692 - Blinking lights game
+ * Usage: bbaiju1692_a3 <wait> <pattern> <num>
+ *   wait    = delay value (e.g. 0xFFFFF)
+ *   pattern = LED pattern string (e.g. 11234)
+ *   num     = number of repeats (e.g. 5)
+ */
+void A3_bbaiju1692(int action)
 {
-  if(action==CMD_SHORT_HELP) return;
-  if(action==CMD_LONG_HELP) {
-    printf("Assignment 2\n\n"
-	   "This command triggers assignment 2 by bbaiju1692\n"
-	   );
-    return;
-  }
-  uint32_t num_input;
-  uint32_t wait_input;
-  int fetch_status;
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Assignment 3 - Blinking Lights by bbaiju1692\n\n"
+               "Usage: bbaiju1692_a3 <wait> <pattern> <num>\n"
+               "  wait    = delay between toggles\n"
+               "  pattern = LED numbers to blink\n"
+               "  num     = number of repeats\n"
+               );
+        return;
+    }
 
-  fetch_status = fetch_uint32_arg(&num_input);
-  if(fetch_status) {
-  	// Use a default value
-  	num_input = 1;
-  }
+    int wait;
+    char *pattern;
+    int num;
 
-  fetch_status = fetch_uint32_arg(&wait_input);
-  if(fetch_status) {
-  	// Use a default value
-  wait_input = 0xFFFFFF;  }
+    /* Get wait (delay) value from user */
+    if(fetch_uint32_arg((uint32_t *)&wait)) {
+        wait = 0xFFFFF;  /* Default delay */
+    }
 
-  printf("bbaiju1692_a2 returned: %d\n", bbaiju1692_a2 (num_input, wait_input) );
+    /* Get pattern string from user */
+    if(fetch_string_arg(&pattern)) {
+        pattern = "1234";  /* Default pattern */
+    }
+
+    /* Get num (repeat count) from user */
+    if(fetch_uint32_arg((uint32_t *)&num)) {
+        num = 3;  /* Default repeats */
+    }
+
+    /* Call assembly function — NO logic in C! */
+    printf("bbaiju1692_a3 returned: %d\n",
+        bbaiju1692_a3(wait, pattern, num));
 }
-ADD_CMD("bbaiju1692_a2", _bbaiju1692_Assignment2, "Assignment 2")
+ADD_CMD("bbaiju1692_a3", A3_bbaiju1692, "Run A3 for bbaiju1692")
+
+/* Declaration for lab 7 assembly function */
+int bbaiju1692_lab7(int delay);
+
+/*
+ * Lab7_bbaiju1692 - Gyroscope reading function
+ * Usage: bbaiju1692_lab7 <count> <delay> <axis>
+ * count = number of readings
+ * delay = time between readings
+ * axis  = 0:all 1:X only 2:Y only 3:Z only
+ */
+void Lab7_bbaiju1692(int action)
+{
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Lab 7 - Gyroscope Test by bbaiju1692\n\n"
+               "Usage: bbaiju1692_lab7 <count> <delay> <axis>\n"
+               "  count = how many readings\n"
+               "  delay = time between readings\n"
+               "  axis  = 0:all  1:X  2:Y  3:Z\n"
+               );
+        return;
+    }
+
+    int count, delay, axis;
+    float xyz[3] = {0};
+
+    /* Get count from user */
+    if(fetch_uint32_arg((uint32_t *)&count)) {
+        printf("Please provide count value\n");
+        return;
+    }
+
+    /* Get delay from user */
+    if(fetch_uint32_arg((uint32_t *)&delay)) {
+        printf("Please provide delay value\n");
+        return;
+    }
+
+    /* Get axis from user */
+    if(fetch_uint32_arg((uint32_t *)&axis)) {
+        printf("Please provide axis (0=all, 1=X, 2=Y, 3=Z)\n");
+        return;
+    }
+
+    /* Loop count times reading gyroscope */
+    int i;
+    for(i = 0; i < count; i++) {
+
+        /* Read gyroscope X Y Z values */
+        BSP_GYRO_GetXYZ(xyz);
+
+        /* Print based on axis selection */
+        if(axis == 0) {
+            printf("X: %f  Y: %f  Z: %f\n",
+                xyz[0]/256, xyz[1]/256, xyz[2]/256);
+        } else if(axis == 1) {
+            printf("X: %f\n", xyz[0]/256);
+        } else if(axis == 2) {
+            printf("Y: %f\n", xyz[1]/256);
+        } else if(axis == 3) {
+            printf("Z: %f\n", xyz[2]/256);
+        }
+
+        /* Call assembly delay function */
+        bbaiju1692_lab7(delay);
+    }
+
+    printf("bbaiju1692_lab7 done!\n");
+}
+
+ADD_CMD("bbaiju1692_lab7", Lab7_bbaiju1692, "Test the new lab 7 gyroscope function")
