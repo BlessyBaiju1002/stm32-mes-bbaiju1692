@@ -1,5 +1,5 @@
 /*
- *  C to assembler menu hook
+ *  C to assembler menu hook - Lab 8 Version
  *
  *  Modified by bbaiju1692
  * 
@@ -7,152 +7,107 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "stm32f3_discovery_gyroscope.h"
 #include <ctype.h>
+
+#include "stm32f3_discovery_gyroscope.h"
 
 #include "common.h"
 
-int bbaiju1692_lab6(int x, int y);
+#define N 500
 
-void Lab6_bbaiju1692(int action)
+// A4 Interrupt Handlers - these are in bbaiju1692_asm.s
+void bbaiju1692_a4_btn(void);
+void bbaiju1692_a4_tick(void);
+
+
+// Timer tick hook for our timer interrupt
+// driven programming.
+//
+// Note that for now, this function toggles LED 0 every N cycles.
+void bbaiju1692_tick(void)
+{
+  // Our tick variable is static so that it keeps its value from one
+  // function call to the next.
+  //
+  // If this was not static, this would not work because ticks would
+  // get reinitialized every time the function was called.
+  static int32_t ticks;
+  
+  // Increment our tick count every time the timer interrupt fires.
+  // Can you measure approximately how fast the tick is running? Try
+  // timing how long it takes for the LED to blink 10 times.
+  ticks++;
+
+  // Every time we reach N cycles, reset the tick count to zero
+  // and toggle LED 0.
+  //
+  // This proves to us that our interrupt is working.
+  if (ticks > N)
+  {
+    ticks = 0;
+    bbaiju1692_a4_tick();
+  }
+
+
+}
+
+// Button press hook for our button interrupt
+// driven programming.
+//
+// Note that for now, this function toggles LED 6 when the button is pressed.
+void bbaiju1692_btn(void)
+{
+  // For now, just toggle an LED to prove the button press was noticed.
+  bbaiju1692_a4_btn();
+}
+
+int bbaiju1692_lab8(void);
+
+void Lab8_bbaiju1692(int action)
 {
 
   if(action==CMD_SHORT_HELP) return;
   if(action==CMD_LONG_HELP) {
-    printf("Lab 6\n\n"
-	   "This command tests new lab 6 function by bbaiju1692\n"
+    printf("Lab 8\n\n"
+	   "This command tests new lab 8 function by bbaiju1692\n"
 	   );
 
     return;
   }
-  printf("bbaiju1692_lab6 returned: %d\n", bbaiju1692_lab6(99, 87) );
+
+
+  printf("bbaiju1692_lab8 returned: %d\n", bbaiju1692_lab8() );
 }
 
-ADD_CMD("bbaiju1692_lab6", Lab6_bbaiju1692,"Test the new lab 6 function")
+ADD_CMD("bbaiju1692_lab8", Lab8_bbaiju1692,"Test the new lab 8 function")
 
-/*
- * bbaiju1692_a3 assembly function declaration
- * Parameters:
- *   wait    = delay between each LED toggle
- *   pattern = string of LED numbers to blink
- *   num     = how many times to repeat pattern
- * Returns: total number of BSP_LED_Toggle calls
- */
-int bbaiju1692_a3(int wait, char *pattern, int num);
+int bbaiju1692_a4(int x);
 
-/*
- * A3_bbaiju1692 - Blinking lights game
- * Usage: bbaiju1692_a3 <wait> <pattern> <num>
- *   wait    = delay value (e.g. 0xFFFFF)
- *   pattern = LED pattern string (e.g. 11234)
- *   num     = number of repeats (e.g. 5)
- */
-void A3_bbaiju1692(int action)
+void A4_bbaiju1692(int action)
 {
-    if(action==CMD_SHORT_HELP) return;
-    if(action==CMD_LONG_HELP) {
-        printf("Assignment 3 - Blinking Lights by bbaiju1692\n\n"
-               "Usage: bbaiju1692_a3 <wait> <pattern> <num>\n"
-               "  wait    = delay between toggles\n"
-               "  pattern = LED numbers to blink\n"
-               "  num     = number of repeats\n"
-               );
-        return;
-    }
 
-    int wait;
-    char *pattern;
-    int num;
+  if(action==CMD_SHORT_HELP) return;
+  if(action==CMD_LONG_HELP) {
+    printf("Assignment 4 Test\n\n"
+	   "This command tests new A4 function by bbaiju1692\n"
+	   );
 
-    /* Get wait (delay) value from user */
-    if(fetch_uint32_arg((uint32_t *)&wait)) {
-        wait = 0xFFFFF;  /* Default delay */
-    }
+    return;
+  }
 
-    /* Get pattern string from user */
-    if(fetch_string_arg(&pattern)) {
-        pattern = "1234";  /* Default pattern */
-    }
+  int fetch_status;
+  uint32_t a4_start;
 
-    /* Get num (repeat count) from user */
-    if(fetch_uint32_arg((uint32_t *)&num)) {
-        num = 3;  /* Default repeats */
-    }
+  fetch_status = fetch_uint32_arg(&a4_start);
 
-    /* Call assembly function — NO logic in C! */
-    printf("bbaiju1692_a3 returned: %d\n",
-        bbaiju1692_a3(wait, pattern, num));
-}
-ADD_CMD("bbaiju1692_a3", A3_bbaiju1692, "Run A3 for bbaiju1692")
+  if (fetch_status) {
+    a4_start = 1;
+  }
 
-/* Declaration for lab 7 assembly function */
-int bbaiju1692_lab7(int delay);
 
-/*
- * Lab7_bbaiju1692 - Gyroscope reading function
- * Usage: bbaiju1692_lab7 <count> <delay> <axis>
- * count = number of readings
- * delay = time between readings
- * axis  = 0:all 1:X only 2:Y only 3:Z only
- */
-void Lab7_bbaiju1692(int action)
-{
-    if(action==CMD_SHORT_HELP) return;
-    if(action==CMD_LONG_HELP) {
-        printf("Lab 7 - Gyroscope Test by bbaiju1692\n\n"
-               "Usage: bbaiju1692_lab7 <count> <delay> <axis>\n"
-               "  count = how many readings\n"
-               "  delay = time between readings\n"
-               "  axis  = 0:all  1:X  2:Y  3:Z\n"
-               );
-        return;
-    }
-
-    int count, delay, axis;
-    float xyz[3] = {0};
-
-    /* Get count from user */
-    if(fetch_uint32_arg((uint32_t *)&count)) {
-        printf("Please provide count value\n");
-        return;
-    }
-
-    /* Get delay from user */
-    if(fetch_uint32_arg((uint32_t *)&delay)) {
-        printf("Please provide delay value\n");
-        return;
-    }
-
-    /* Get axis from user */
-    if(fetch_uint32_arg((uint32_t *)&axis)) {
-        printf("Please provide axis (0=all, 1=X, 2=Y, 3=Z)\n");
-        return;
-    }
-
-    /* Loop count times reading gyroscope */
-    int i;
-    for(i = 0; i < count; i++) {
-
-        /* Read gyroscope X Y Z values */
-        BSP_GYRO_GetXYZ(xyz);
-
-        /* Print based on axis selection */
-        if(axis == 0) {
-            printf("X: %f  Y: %f  Z: %f\n",
-                xyz[0]/256, xyz[1]/256, xyz[2]/256);
-        } else if(axis == 1) {
-            printf("X: %f\n", xyz[0]/256);
-        } else if(axis == 2) {
-            printf("Y: %f\n", xyz[1]/256);
-        } else if(axis == 3) {
-            printf("Z: %f\n", xyz[2]/256);
-        }
-
-        /* Call assembly delay function */
-        bbaiju1692_lab7(delay);
-    }
-
-    printf("bbaiju1692_lab7 done!\n");
+  printf("bbaiju1692_a4 returned: %d\n", bbaiju1692_a4(a4_start) );
 }
 
-ADD_CMD("bbaiju1692_lab7", Lab7_bbaiju1692, "Test the new lab 7 gyroscope function")
+ADD_CMD("bbaiju1692_a4", A4_bbaiju1692,"Test the A4 function")
+
+
