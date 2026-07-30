@@ -212,7 +212,7 @@ bbaiju1692_lab9:
     ldr r1, =LEDaddress    @ Load address of GPIO register pointer
     ldr r1, [r1]           @ Dereference to get actual GPIO address
     ldrh r0, [r1]          @ Read current GPIO state (half word)
-    orr r0, r0, #0x0100    @ Set bit for LED4 (pin 8)
+    orr r0, r0, #0x3C00    @ Turn on N,S,E,W LEDs all at once!
     strh r0, [r1]          @ Write back to GPIO register
 
     pop {lr}
