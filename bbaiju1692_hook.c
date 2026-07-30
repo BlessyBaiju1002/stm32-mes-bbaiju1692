@@ -81,35 +81,58 @@ void Lab8_bbaiju1692(int action)
 
 ADD_CMD("bbaiju1692_lab8", Lab8_bbaiju1692,"Test the new lab 8 function")
 
-int bbaiju1692_a4(int x);
+/*
+ * bbaiju1692_a4 assembly function declaration
+ * Parameters:
+ *   status     = 1 to start, 0 or negative to stop
+ *   num_skip   = ticks to skip between LED toggles
+ *   direction  = +1 forward, -1 backward, 0 no change
+ * Returns: 0
+ */
+int bbaiju1692_a4(int status, int num_skip, int direction);
 
+/*
+ * A4_bbaiju1692 - Interrupt driven LED blinking
+ * Usage: bbaiju1692_a4 <status> <num_skip> <direction>
+ *   status    = 1=start, 0=stop
+ *   num_skip  = how many ticks to skip between blinks
+ *   direction = 1=forward, -1=backward, 0=no change
+ */
 void A4_bbaiju1692(int action)
 {
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Assignment 4\n\n"
+               "Usage: bbaiju1692_a4 <status> <num_skip> <direction>\n"
+               "  status    = 1=start, 0=stop\n"
+               "  num_skip  = ticks between blinks\n"
+               "  direction = 1=forward, -1=backward, 0=no change\n"
+               );
+        return;
+    }
 
-  if(action==CMD_SHORT_HELP) return;
-  if(action==CMD_LONG_HELP) {
-    printf("Assignment 4 Test\n\n"
-	   "This command tests new A4 function by bbaiju1692\n"
-	   );
+    int status, num_skip, direction;
 
-    return;
-  }
+    /* Get status from user */
+    if(fetch_uint32_arg((uint32_t *)&status)) {
+        status = 1;        /* Default: start running */
+    }
 
-  int fetch_status;
-  uint32_t a4_start;
+    /* Get num_skip from user */
+    if(fetch_uint32_arg((uint32_t *)&num_skip)) {
+        num_skip = 500;    /* Default: skip 500 ticks */
+    }
 
-  fetch_status = fetch_uint32_arg(&a4_start);
+    /* Get direction from user */
+    if(fetch_uint32_arg((uint32_t *)&direction)) {
+        direction = 1;     /* Default: forward */
+    }
 
-  if (fetch_status) {
-    a4_start = 1;
-  }
-
-
-  printf("bbaiju1692_a4 returned: %d\n", bbaiju1692_a4(a4_start) );
+    /* Call assembly function - NO logic in C! */
+    printf("bbaiju1692_a4 returned: %d\n",
+        bbaiju1692_a4(status, num_skip, direction));
 }
-
-ADD_CMD("bbaiju1692_a4", A4_bbaiju1692,"Test the A4 function")
-
+ADD_CMD("bbaiju1692_a4", A4_bbaiju1692, "Test the A4 function")
 /*
  * Lab9_bbaiju1692 - Low Level GPIO LED control
  * Directly manipulates GPIO register to control LEDs
