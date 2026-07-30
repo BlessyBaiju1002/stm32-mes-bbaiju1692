@@ -208,14 +208,20 @@ a4_button_count: .word 0
 bbaiju1692_lab9:
     push {lr}
 
-    @ These lines just show that the code is working
-    mov r0, #0
-    ldr r1, =BSP_LED_Toggle
-    blx r1
-    
+    @ Directly turn on one LED using GPIO register
+    ldr r1, =LEDaddress    @ Load address of GPIO register pointer
+    ldr r1, [r1]           @ Dereference to get actual GPIO address
+    ldrh r0, [r1]          @ Read current GPIO state (half word)
+    orr r0, r0, #0x0100    @ Set bit for LED4 (pin 8)
+    strh r0, [r1]          @ Write back to GPIO register
+
     pop {lr}
     bx lr
-    .size   bbaiju1692_lab9, .-bbaiju1692_lab9
+    .size bbaiju1692_lab9, .-bbaiju1692_lab9
+
+@ Data section - GPIO address
+LEDaddress:
+    .word 0x48001014
 
 @ Assembly file ended by single .end directive on its own line
 .end
