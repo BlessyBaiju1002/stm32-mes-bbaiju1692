@@ -110,4 +110,24 @@ void A4_bbaiju1692(int action)
 
 ADD_CMD("bbaiju1692_a4", A4_bbaiju1692,"Test the A4 function")
 
+/*
+ * Lab9_bbaiju1692 - Low Level GPIO LED control
+ * Directly manipulates GPIO register to control LEDs
+ * No library functions used!
+ */
+int bbaiju1692_lab9(void);
 
+void Lab9_bbaiju1692(int action)
+{
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Lab 9\n\n"
+               "This command tests new lab 9 function by bbaiju1692\n"
+               );
+        return;
+    }
+
+    printf("bbaiju1692_lab9 returned: %d\n", bbaiju1692_lab9());
+}
+
+ADD_CMD("bbaiju1692_lab9", Lab9_bbaiju1692, "Test the new lab 9 function")

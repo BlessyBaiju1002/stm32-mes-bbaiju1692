@@ -195,6 +195,27 @@ busy_delay:
 a4_is_running: .word 0
 a4_button_count: .word 0
 
+@@ Function Header Block
+    .global bbaiju1692_lab9
+    .type   bbaiju1692_lab9, %function
+
+@ Function Declaration : int bbaiju1692_lab9(void)
+@
+@ Input: None
+@ Returns: r0
+@
+@ Here is the actual bbaiju1692_lab9 function
+bbaiju1692_lab9:
+    push {lr}
+
+    @ These lines just show that the code is working
+    mov r0, #0
+    ldr r1, =BSP_LED_Toggle
+    blx r1
+    
+    pop {lr}
+    bx lr
+    .size   bbaiju1692_lab9, .-bbaiju1692_lab9
 
 @ Assembly file ended by single .end directive on its own line
 .end
