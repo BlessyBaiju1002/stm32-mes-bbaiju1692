@@ -148,105 +148,78 @@ bbaiju1692_a4_btn:
 .global bbaiju1692_a4_tick
 .type   bbaiju1692_a4_tick, %function
 
-@ Function Declaration : void bbaiju1692_a4_tick(void)
+@ Function Declaration: void bbaiju1692_a4_tick(void)
 @
-@ Input: None
+@ Input:   None
 @ Returns: Nothing
-@ 
-
-@ Here is the actual function
+@
+@ Called automatically every N milliseconds by SysTick interrupt
+@ Checks if A4 is running, skips ticks if needed,
+@ then toggles current LED and moves to next one
+@
 bbaiju1692_a4_tick:
-    push {r4, r5, r6, lr}  @ Save all registers we will use
+    push {r4, r5, r6, lr}      @ Save registers we will use
 
-    @ As a starting point, this function implements the basics needed
-    @ to determine if our A4 logic should be running.
-    @
-    @ You will have to add logic here for A4.
+    @ ---- STEP 1: Check if A4 is running ----
+    ldr r1, =a4_is_running     @ Load address of running flag
+    ldr r0, [r1]               @ Read running state from memory
+    cmp r0, #0                 @ Is running state zero or less?
+    ble a4_tick_done           @ Yes → not running, exit now
 
-    @ Some useful notes
-    @
-    @ BSP_LED_On, BSP_LED_Off - same argument as BSP_LED_Toggle, sets
-    @ the LED to ON or OFF as you tell it
-    @
-    @ How to delay: DO NOT use busy_delay - remember, this is an interrupt
-    @ handler. If you need a delay, use a counter to count how many times
-    @ this function has been called, and use that to skip a desired number
-    @ of calls.
+    @ ---- STEP 2: Handle skip counter ----
+    @ We don't blink every tick - we skip some ticks first
+    ldr r1, =a4_skip_count     @ Load address of skip counter
+    ldr r0, [r1]               @ Read current skip count
+    add r0, r0, #1             @ Add 1 to skip count
+    str r0, [r1]               @ Save updated skip count back
 
+    @ Compare skip count with our target num_skip value
+    ldr r2, =a4_num_skip       @ Load address of num_skip
+    ldr r2, [r2]               @ Read num_skip value
+    cmp r0, r2                 @ Have we skipped enough ticks?
+    blt a4_tick_done           @ No → not yet, exit without blinking
 
-    @ ***** Get something
-    ldr r1, =a4_is_running
-    ldr r0, [r1]
+    @ ---- STEP 3: Reset skip counter ----
+    @ We have waited long enough - reset counter and blink!
+    ldr r1, =a4_skip_count     @ Load address of skip counter
+    mov r0, #0                 @ Value to reset counter to
+    str r0, [r1]               @ Reset skip counter to zero
 
-    @ ***** Check something
-    cmp r0, #0
-    ble a4_skip
+    @ ---- STEP 4: Toggle current LED ----
+    ldr r4, =a4_current_led    @ Load address of current LED variable
+    ldr r0, [r4]               @ Read current LED index (0-7)
+    ldr r5, =BSP_LED_Toggle    @ Load address of toggle function
+    blx r5                     @ Call toggle with LED index in r0
 
-        @ This part below is skipped if A4 is NOT running. You will want to
-        @ keep all your A4 logic inside here.
-        @ DO NOT PUT LOGIC FOR A4 ABOVE THIS LINE -----------------------------
+    @ ---- STEP 5: Move to next LED ----
+    ldr r0, [r4]               @ Read current LED index again
+    ldr r6, =a4_direction      @ Load address of direction variable
+    ldr r6, [r6]               @ Read direction value (+1 or -1)
+    add r0, r0, r6             @ Add direction to get next LED index
 
-        @ Even within this logic, you should still take a philosopy of check
-        @ things, do things, and store things - do not use delays of any sort,
-        @ and only use loops if they are bounded (that is, guaranteed to end)
+    @ ---- STEP 6: Wrap LED index if out of range ----
+    cmp r0, #8                 @ Is new index 8 or more?
+    bge a4_tick_wrap_low       @ Yes → went past LED 7, wrap to 0
 
-        @ ***** Do something
+    cmp r0, #0                 @ Is new index less than 0?
+    blt a4_tick_wrap_high      @ Yes → went below LED 0, wrap to 7
 
-        @ Check skip counter - have we waited long enough?
-        ldr r1, =a4_skip_count  @ Get address of skip counter
-        ldr r0, [r1]            @ Get current skip count
-        add r0, r0, #1          @ Increment skip count
-        str r0, [r1]            @ Save new skip count
+    b a4_tick_save             @ Index in range → go save it
 
-        ldr r2, =a4_num_skip    @ Get address of num_skip
-        ldr r2, [r2]            @ Get num_skip value
-        cmp r0, r2              @ Have we waited enough?
-        blt a4_skip             @ No → skip this tick
+a4_tick_wrap_low:
+    mov r0, #0                 @ Past end → wrap back to LED 0
+    b a4_tick_save             @ Go save it
 
-        @ Reset skip counter back to 0
-        mov r0, #0              @ Reset value
-        str r0, [r1]            @ Save reset value
+a4_tick_wrap_high:
+    mov r0, #7                 @ Below start → wrap to LED 7
 
-                @ Toggle the current LED
-        ldr r4, =a4_current_led @ Get address of current LED
-        ldr r0, [r4]            @ Get current LED index
-        ldr r5, =BSP_LED_Toggle @ Load toggle function address
-        blx r5                  @ Toggle current LED
+a4_tick_save:
+    str r0, [r4]               @ Save new LED index to memory
 
-        @ Move to next LED using direction
-        ldr r0, [r4]            @ Get current LED index again
-        ldr r2, =a4_direction   @ Get direction address
-        ldr r2, [r2]            @ Get direction value (+1 or -1)
-        add r0, r0, r2          @ Move to next LED
-
-        @ Wrap around if out of range
-        cmp r0, #8              @ Greater than 7?
-        bge a4_wrap_low         @ Yes → wrap to 0
-        cmp r0, #0              @ Less than 0?
-        blt a4_wrap_high        @ Yes → wrap to 7
-        b a4_save_led           @ In range → save it
-
-a4_wrap_low:
-        mov r0, #0              @ Wrap to LED 0
-        b a4_save_led
-
-a4_wrap_high:
-        mov r0, #7              @ Wrap to LED 7
-
-a4_save_led:
-        str r0, [r4]            @ Save new LED index
-
-    
-
-        @ DO NOT PUT LOGIC FOR A4 BELOW THIS LINE -----------------------------
-        @ End of A4 skipped logic. Do not add logic below here.
-
-    a4_skip:
-
-    @ ***** End of our tick function
-    pop {r4, r5, r6, lr}   @ Restore all registers
-    bx lr
-    .size   bbaiju1692_a4_tick, .-bbaiju1692_a4_tick
+a4_tick_done:
+    pop {r4, r5, r6, lr}      @ Restore all saved registers
+    bx lr                      @ Return to caller
+    .size bbaiju1692_a4_tick, .-bbaiju1692_a4_tick
 
 
 @ Function Declaration : int busy_delay(int cycles)
