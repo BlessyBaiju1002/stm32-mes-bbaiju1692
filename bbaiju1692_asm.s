@@ -58,26 +58,63 @@ bbaiju1692_lab8:
 .global bbaiju1692_a4
 .type   bbaiju1692_a4, %function
 
-@ Function Declaration : int bbaiju1692_a4(int x)
+@ Function Declaration: int bbaiju1692_a4(int status, int num_skip, int direction)
 @
-@ Input: Document this
-@ Returns: Document this
-@ 
-
+@ Input:
+@   r0 = status    (1=start, 0=stop)
+@   r1 = num_skip  (ticks between blinks)
+@   r2 = direction (+1=forward, -1=backward, 0=no change)
+@
+@ Returns: r0 = 0
+@
 @ Here is the actual function
 bbaiju1692_a4:
+    push {r4, r5, r6, lr}  @ Save registers
 
-    @ This function only exists to start / initialize your A4
-    @ logic working. No actions should be taken in this logic,
-    @ aside from storing the parameters your A4 logic needs to run.
+    mov r4, r0             @ r4 = status
+    mov r5, r1             @ r5 = num_skip
+    mov r6, r2             @ r6 = direction
 
-    @ Store the value we received indicating the running state
-    ldr r1, =a4_is_running
-    str r0, [r1]
+    @ Save status to memory
+    ldr r0, =a4_is_running
+    str r4, [r0]           @ Store running state
 
-    bx lr
+    @ Save num_skip to memory
+    ldr r0, =a4_num_skip
+    str r5, [r0]           @ Store num_skip
+
+    @ Only change direction if not zero
+    cmp r6, #0             @ Is direction 0?
+    beq bbaiju1692_a4_skip_dir @ Yes → don't change
+
+    ldr r0, =a4_direction
+    str r6, [r0]           @ Store direction
+
+bbaiju1692_a4_skip_dir:
+    @ Reset skip counter to 0
+    ldr r0, =a4_skip_count
+    mov r1, #0
+    str r1, [r0]           @ Reset counter
+
+    @ Turn off all 8 LEDs before starting
+    mov r4, #0             @ Start from LED 0
+
+bbaiju1692_a4_off_loop:
+    cmp r4, #8             @ Done all 8 LEDs?
+    bge bbaiju1692_a4_done @ Yes → exit
+
+    mov r0, r4             @ LED index into r0
+    ldr r1, =BSP_LED_Off   @ Load BSP_LED_Off address
+    blx r1                 @ Turn off this LED
+
+    add r4, r4, #1         @ Next LED
+    b bbaiju1692_a4_off_loop @ Loop back
+
+bbaiju1692_a4_done:
+    mov r0, #0             @ Return 0
+    pop {r4, r5, r6, lr}   @ Restore registers
+    bx lr                  @ Return to C
     .size   bbaiju1692_a4, .-bbaiju1692_a4
-
 
 .global bbaiju1692_a4_btn
 .type   bbaiju1692_a4_btn, %function
@@ -154,8 +191,54 @@ bbaiju1692_a4_tick:
         @ and only use loops if they are bounded (that is, guaranteed to end)
 
         @ ***** Do something
-        mov r0, #0
-        bl BSP_LED_Toggle
+
+        @ Check skip counter - have we waited long enough?
+        ldr r1, =a4_skip_count  @ Get address of skip counter
+        ldr r0, [r1]            @ Get current skip count
+        add r0, r0, #1          @ Increment skip count
+        str r0, [r1]            @ Save new skip count
+
+        ldr r2, =a4_num_skip    @ Get address of num_skip
+        ldr r2, [r2]            @ Get num_skip value
+        cmp r0, r2              @ Have we waited enough?
+        blt a4_skip             @ No → skip this tick
+
+        @ Reset skip counter back to 0
+        mov r0, #0              @ Reset value
+        str r0, [r1]            @ Save reset value
+
+        @ Toggle the current LED
+        ldr r1, =a4_current_led @ Get address of current LED
+        ldr r0, [r1]            @ Get current LED index
+        push {r1}               @ Save r1 before BL call
+        ldr r2, =BSP_LED_Toggle @ Load toggle function address
+        blx r2                  @ Toggle current LED
+
+        @ Move to next LED using direction
+        pop {r1}                @ Restore r1 (current_led address)
+        ldr r0, [r1]            @ Get current LED index again
+        ldr r2, =a4_direction   @ Get direction address
+        ldr r2, [r2]            @ Get direction value (+1 or -1)
+        add r0, r0, r2          @ Move to next LED
+
+        @ Wrap around if out of range
+        cmp r0, #8              @ Greater than 7?
+        bge a4_wrap_low         @ Yes → wrap to 0
+        cmp r0, #0              @ Less than 0?
+        blt a4_wrap_high        @ Yes → wrap to 7
+        b a4_save_led           @ In range → save it
+
+a4_wrap_low:
+        mov r0, #0              @ Wrap to LED 0
+        b a4_save_led
+
+a4_wrap_high:
+        mov r0, #7              @ Wrap to LED 7
+
+a4_save_led:
+        str r0, [r1]            @ Save new LED index
+
+    
 
         @ DO NOT PUT LOGIC FOR A4 BELOW THIS LINE -----------------------------
         @ End of A4 skipped logic. Do not add logic below here.
@@ -194,6 +277,10 @@ busy_delay:
 .data
 a4_is_running: .word 0
 a4_button_count: .word 0
+a4_num_skip:    .word 500  @ ticks to skip between blinks
+a4_direction:   .word 1    @ +1=forward, -1=backward
+a4_current_led: .word 0    @ current LED index (0-7)
+a4_skip_count:  .word 0    @ current skip counter
 
 @@ Function Header Block
     .global bbaiju1692_lab9
@@ -212,7 +299,7 @@ bbaiju1692_lab9:
     ldr r1, =LEDaddress    @ Load address of GPIO register pointer
     ldr r1, [r1]           @ Dereference to get actual GPIO address
     ldrh r0, [r1]          @ Read current GPIO state (half word)
-    eor r0, r0, #0x3C00    @ Toggle N,S,E,W LEDs all at once!
+    orr r0, r0, #0x0100
     strh r0, [r1]          @ Write back to GPIO register
 
     pop {lr}
