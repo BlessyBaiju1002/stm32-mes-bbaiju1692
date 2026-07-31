@@ -156,7 +156,7 @@ bbaiju1692_a4_btn:
 
 @ Here is the actual function
 bbaiju1692_a4_tick:
-    push {lr}
+    push {r4, r5, r6, lr}  @ Save all registers we will use
 
     @ As a starting point, this function implements the basics needed
     @ to determine if our A4 logic should be running.
@@ -207,16 +207,14 @@ bbaiju1692_a4_tick:
         mov r0, #0              @ Reset value
         str r0, [r1]            @ Save reset value
 
-        @ Toggle the current LED
-        ldr r1, =a4_current_led @ Get address of current LED
-        ldr r0, [r1]            @ Get current LED index
-        push {r1}               @ Save r1 before BL call
-        ldr r2, =BSP_LED_Toggle @ Load toggle function address
-        blx r2                  @ Toggle current LED
+                @ Toggle the current LED
+        ldr r4, =a4_current_led @ Get address of current LED
+        ldr r0, [r4]            @ Get current LED index
+        ldr r5, =BSP_LED_Toggle @ Load toggle function address
+        blx r5                  @ Toggle current LED
 
         @ Move to next LED using direction
-        pop {r1}                @ Restore r1 (current_led address)
-        ldr r0, [r1]            @ Get current LED index again
+        ldr r0, [r4]            @ Get current LED index again
         ldr r2, =a4_direction   @ Get direction address
         ldr r2, [r2]            @ Get direction value (+1 or -1)
         add r0, r0, r2          @ Move to next LED
@@ -236,7 +234,7 @@ a4_wrap_high:
         mov r0, #7              @ Wrap to LED 7
 
 a4_save_led:
-        str r0, [r1]            @ Save new LED index
+        str r0, [r4]            @ Save new LED index
 
     
 
@@ -246,7 +244,7 @@ a4_save_led:
     a4_skip:
 
     @ ***** End of our tick function
-    pop {lr}
+    pop {r4, r5, r6, lr}   @ Restore all registers
     bx lr
     .size   bbaiju1692_a4_tick, .-bbaiju1692_a4_tick
 
