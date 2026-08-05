@@ -154,3 +154,26 @@ void Lab9_bbaiju1692(int action)
 }
 
 ADD_CMD("bbaiju1692_lab9", Lab9_bbaiju1692, "Test the new lab 9 function")
+
+void mes_InitIWDG(int reload);
+void mes_IWDGStart(void);
+void mes_IWDGRefresh(void);
+
+void Lab10_bbaiju1692(int action)
+{
+  if(action==CMD_SHORT_HELP) return;
+  if(action==CMD_LONG_HELP) {
+    printf("Lab 10\n\n"
+       "This command tests new lab 10 function by bbaiju1692\n"
+       );
+    return;
+  }
+
+  printf("Initializing Watchdog\n");
+  mes_InitIWDG(9999);
+  printf("Starting Watchdog\n");
+  mes_IWDGStart();
+
+}
+
+ADD_CMD("bbaiju1692_lab10", Lab10_bbaiju1692,"Test the new lab 10 function")
