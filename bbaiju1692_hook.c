@@ -165,15 +165,21 @@ void Lab10_bbaiju1692(int action)
   if(action==CMD_LONG_HELP) {
     printf("Lab 10\n\n"
        "This command tests new lab 10 function by bbaiju1692\n"
+       "Usage: bbaiju1692_lab10 <reload>\n"
+       "  reload = watchdog countdown value\n"
        );
     return;
   }
 
-  printf("Initializing Watchdog\n");
-  mes_InitIWDG(9999);
+  int reload;
+
+  /* Get reload value from user */
+  if(fetch_uint32_arg((uint32_t *)&reload)) {
+    reload = 9999;  /* Default reload value */
+  }
+
+  printf("Initializing Watchdog with reload: %d\n", reload);
+  mes_InitIWDG(reload);
   printf("Starting Watchdog\n");
   mes_IWDGStart();
-
 }
-
-ADD_CMD("bbaiju1692_lab10", Lab10_bbaiju1692,"Test the new lab 10 function")
