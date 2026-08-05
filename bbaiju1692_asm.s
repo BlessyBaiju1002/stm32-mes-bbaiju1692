@@ -80,7 +80,7 @@ bbaiju1692_a4:
     str r4, [r0]           @ Store running state
 
     @ Save num_skip to memory
-    ldr r0, =a4_num_skip
+   ldr r0, =a4_num_skip
     str r5, [r0]           @ Store num_skip
 
     @ Only change direction if not zero
@@ -188,7 +188,7 @@ bbaiju1692_a4_tick:
     @ ---- STEP 4: Toggle current LED ----
     ldr r4, =a4_current_led    @ Load address of current LED variable
     ldr r0, [r4]               @ Read current LED index (0-7)
-    ldr r5, =BSP_LED_Toggle    @ Load address of toggle function
+    ldr r5, =BSP_LED_Toggle    @ Load address of toggle function=
     blx r5                     @ Call toggle with LED index in r0
 
     @ ---- STEP 5: Move to next LED ----
