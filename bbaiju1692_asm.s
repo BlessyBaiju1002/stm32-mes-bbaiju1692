@@ -253,6 +253,10 @@ a4_direction:   .word 1    @ +1=forward, -1=backward
 a4_current_led: .word 0    @ current LED index (0-7)
 a4_skip_count:  .word 0    @ current skip counter
 
+a5_running:     .word 0    @ A5 running flag (1=running, 0=stopped)
+a5_btn_pressed: .word 0    @ Button pressed flag (1=pressed, 0=not)
+
+
 @@ Function Header Block
     .global bbaiju1692_lab9
     .type   bbaiju1692_lab9, %function
@@ -280,6 +284,143 @@ bbaiju1692_lab9:
 @ Data section - GPIO address
 LEDaddress:
     .word 0x48001014
+
+    @@ Function Header Block - Assignment 5 Tick
+    .global bbaiju1692_a5_tick
+    .type   bbaiju1692_a5_tick, %function
+
+@ Function Declaration: void bbaiju1692_a5_tick(void)
+@
+@ Input:   None
+@ Returns: Nothing
+@
+@ Called automatically by SysTick interrupt
+@ Handles A5 LED blinking and watchdog refresh
+@
+bbaiju1692_a5_tick:
+    push {r4, r5, lr}          @ Save registers
+
+    @ Check if A5 is running
+    ldr r1, =a5_running        @ Load address of running flag
+    ldr r0, [r1]               @ Read running state
+    cmp r0, #0                 @ Is it zero or less?
+    ble a5_skip                @ Not running → exit
+
+        @ DO NOT PUT LOGIC FOR A5 ABOVE THIS LINE --------
+
+        @ Toggle Upper Left, Upper Right, Lower Left, Lower Right LEDs
+        @ Using direct GPIO memory access (Lab 9 style!)
+        @ GPIO Port E Output Data Register = 0x48001014
+        @ UL=LED3=bit9=0x0200, UR=LED4=bit8=0x0100
+        @ LL=LED6=bit15=0x8000, LR=LED8=bit14=0x4000
+        @ All 4 corners = 0x0200|0x0100|0x8000|0x4000 = 0xC300
+
+        ldr r4, =0x48001014    @ Load GPIO ODR address
+        ldrh r0, [r4]          @ Read current GPIO state
+        eor r0, r0, #0xC300    @ Toggle all 4 corner LEDs at once
+        strh r0, [r4]          @ Write back to GPIO register
+
+        @ Check if button was pressed
+        ldr r1, =a5_btn_pressed @ Load address of button flag
+        ldr r0, [r1]            @ Read button flag
+        cmp r0, #0              @ Was button pressed?
+        bne a5_skip             @ Yes → skip watchdog refresh (board will reboot!)
+
+        @ Refresh watchdog (only if button NOT pressed)
+        ldr r4, =mes_IWDGRefresh @ Load refresh function address
+        blx r4                   @ Refresh the watchdog
+
+        @ DO NOT PUT LOGIC FOR A5 BELOW THIS LINE --------
+
+    a5_skip:
+    pop {r4, r5, lr}           @ Restore registers
+    bx lr                      @ Return to caller
+    .size bbaiju1692_a5_tick, .-bbaiju1692_a5_tick
+
+
+@@ Function Header Block - Assignment 5 Button
+    .global bbaiju1692_a5_btn
+    .type   bbaiju1692_a5_btn, %function
+
+@ Function Declaration: void bbaiju1692_a5_btn(void)
+@
+@ Input:   None
+@ Returns: Nothing
+@
+@ Called when blue button is pressed
+@ Sets a5_btn_pressed flag to 1
+@
+bbaiju1692_a5_btn:
+    push {lr}                  @ Save return address
+
+    @ Set button pressed flag to 1
+    ldr r1, =a5_btn_pressed    @ Load address of button flag
+    mov r0, #1                 @ Value to set
+    str r0, [r1]               @ Store flag = 1
+
+    pop {lr}                   @ Restore return address
+    bx lr                      @ Return to caller
+    .size bbaiju1692_a5_btn, .-bbaiju1692_a5_btn
+
+
+@@ Function Header Block - Assignment 5 Main Function
+    .global bbaiju1692_a5
+    .type   bbaiju1692_a5, %function
+
+@ Function Declaration: int bbaiju1692_a5(int status, int num_skip, int direction)
+@
+@ Input:
+@   r0 = status    (1=start, 0=stop)
+@   r1 = num_skip  (not used in A5 but kept for compatibility)
+@   r2 = direction (not used in A5 but kept for compatibility)
+@
+@ Returns: r0 = 0
+@
+@ Initializes A5 LED blinking with watchdog
+@
+bbaiju1692_a5:
+    push {r4, r5, r6, lr}     @ Save registers
+
+    mov r4, r0                 @ r4 = status
+
+    @ Save running state
+    ldr r0, =a5_running        @ Load address of running flag
+    str r4, [r0]               @ Store running state
+
+    @ Reset button pressed flag
+    ldr r0, =a5_btn_pressed    @ Load address of button flag
+    mov r1, #0                 @ Reset value
+    str r1, [r0]               @ Clear button flag
+
+    @ Turn off all 8 LEDs first
+    mov r4, #0                 @ Start from LED 0
+
+bbaiju1692_a5_off_loop:
+    cmp r4, #8                 @ Done all 8 LEDs?
+    bge bbaiju1692_a5_wdog     @ Yes → setup watchdog
+
+    mov r0, r4                 @ LED index into r0
+    ldr r5, =BSP_LED_Off       @ Load BSP_LED_Off address
+    blx r5                     @ Turn off this LED
+
+    add r4, r4, #1             @ Next LED
+    b bbaiju1692_a5_off_loop   @ Loop back
+
+bbaiju1692_a5_wdog:
+    @ Initialize watchdog with reload 8000
+    mov r0, #8000              @ Reload value
+    ldr r4, =mes_InitIWDG      @ Load init function address
+    blx r4                     @ Initialize watchdog
+
+    @ Start watchdog
+    ldr r4, =mes_IWDGStart     @ Load start function address
+    blx r4                     @ Start watchdog
+
+bbaiju1692_a5_done:
+    mov r0, #0                 @ Return 0
+    pop {r4, r5, r6, lr}      @ Restore registers
+    bx lr                      @ Return to C
+    .size bbaiju1692_a5, .-bbaiju1692_a5
 
 @ Assembly file ended by single .end directive on its own line
 .end
