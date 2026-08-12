@@ -317,7 +317,7 @@ bbaiju1692_a5_tick:
 
         ldr r4, =0x48001014    @ Load GPIO ODR address
         ldrh r0, [r4]          @ Read current GPIO state
-        eor r0, r0, #0xC300    @ Toggle all 4 corner LEDs at once
+        eor r0, r0, #0x7800    @ Toggle UL,UR,LL,LR corner LEDs
         strh r0, [r4]          @ Write back to GPIO register
 
         @ Check if button was pressed
