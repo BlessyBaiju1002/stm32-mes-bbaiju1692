@@ -248,13 +248,15 @@ busy_delay:
 .data
 a4_is_running: .word 0
 a4_button_count: .word 0
-a4_num_skip:    .word 500  @ ticks to skip between blinks
-a4_direction:   .word 1    @ +1=forward, -1=backward
-a4_current_led: .word 0    @ current LED index (0-7)
-a4_skip_count:  .word 0    @ current skip counter
+a4_num_skip:    .word 500
+a4_direction:   .word 1
+a4_current_led: .word 0
+a4_skip_count:  .word 0
+a5_running:     .word 0
+a5_btn_pressed: .word 0
+LEDaddress:     .word 0x48001014  @ GPIO ODR address
 
-a5_running:     .word 0    @ A5 running flag (1=running, 0=stopped)
-a5_btn_pressed: .word 0    @ Button pressed flag (1=pressed, 0=not)
+
 
 
 @@ Function Header Block
@@ -281,10 +283,8 @@ bbaiju1692_lab9:
     bx lr
     .size bbaiju1692_lab9, .-bbaiju1692_lab9
 
-@ Data section - GPIO address
-LEDaddress:
-    .word 0x48001014
-
+    
+   .text
     @@ Function Header Block - Assignment 5 Tick
     .global bbaiju1692_a5_tick
     .type   bbaiju1692_a5_tick, %function
@@ -320,12 +320,12 @@ bbaiju1692_a5_tick:
     ldr r5, =0x7800        @ Load corner LED mask into register
     eor r0, r0, r5         @ Toggle UL,UR,LL,LR corner LEDs
     strh r0, [r4]          @ Write back to GPIO register
-    
-        @ Check if button was pressed
+
+    @ Check if button was pressed
         ldr r1, =a5_btn_pressed @ Load address of button flag
         ldr r0, [r1]            @ Read button flag
         cmp r0, #0              @ Was button pressed?
-        bne a5_skip             @ Yes → skip watchdog refresh (board will reboot!)
+        bne a5_skip             @ Yes → skip watchdog refresh
 
         @ Refresh watchdog (only if button NOT pressed)
         ldr r4, =mes_IWDGRefresh @ Load refresh function address
