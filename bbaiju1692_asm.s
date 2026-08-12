@@ -315,11 +315,12 @@ bbaiju1692_a5_tick:
         @ LL=LED6=bit15=0x8000, LR=LED8=bit14=0x4000
         @ All 4 corners = 0x0200|0x0100|0x8000|0x4000 = 0xC300
 
-        ldr r4, =0x48001014    @ Load GPIO ODR address
-        ldrh r0, [r4]          @ Read current GPIO state
-        eor r0, r0, #0x7800    @ Toggle UL,UR,LL,LR corner LEDs
-        strh r0, [r4]          @ Write back to GPIO register
-
+    ldr r4, =0x48001014    @ Load GPIO ODR address
+    ldrh r0, [r4]          @ Read current GPIO state
+    ldr r5, =0x7800        @ Load corner LED mask into register
+    eor r0, r0, r5         @ Toggle UL,UR,LL,LR corner LEDs
+    strh r0, [r4]          @ Write back to GPIO register
+    
         @ Check if button was pressed
         ldr r1, =a5_btn_pressed @ Load address of button flag
         ldr r0, [r1]            @ Read button flag
