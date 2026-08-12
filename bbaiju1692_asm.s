@@ -409,7 +409,7 @@ bbaiju1692_a5_off_loop:
 
 bbaiju1692_a5_wdog:
     @ Initialize watchdog with reload 8000
-    mov r0, #8000              @ Reload value
+    mov r0, #1000              @ Reload value - reboots faster!
     ldr r4, =mes_InitIWDG      @ Load init function address
     blx r4                     @ Initialize watchdog
 
