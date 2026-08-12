@@ -16,8 +16,8 @@
 #define N 500
 
 // A4 Interrupt Handlers - these are in bbaiju1692_asm.s
-void bbaiju1692_a4_btn(void);
-void bbaiju1692_a4_tick(void);
+void bbaiju1692_a5_btn(void);
+void bbaiju1692_a5_tick(void);
 
 
 // Timer tick hook for our timer interrupt
@@ -45,7 +45,7 @@ void bbaiju1692_tick(void)
   if (ticks > N)
   {
     ticks = 0;
-    bbaiju1692_a4_tick();
+    bbaiju1692_a5_tick();
   }
 
 
@@ -58,7 +58,7 @@ void bbaiju1692_tick(void)
 void bbaiju1692_btn(void)
 {
   // For now, just toggle an LED to prove the button press was noticed.
-  bbaiju1692_a4_btn();
+  bbaiju1692_a5_btn();
 }
 
 int bbaiju1692_lab8(void);
@@ -133,6 +133,52 @@ void A4_bbaiju1692(int action)
         bbaiju1692_a4(status, num_skip, direction));
 }
 ADD_CMD("bbaiju1692_a4", A4_bbaiju1692, "Test the A4 function")
+
+
+
+/* Declaration for A5 assembly functions */
+void bbaiju1692_a5_tick(void);
+void bbaiju1692_a5_btn(void);
+int bbaiju1692_a5(int status, int num_skip, int direction);
+
+void A5_bbaiju1692(int action)
+{
+    if(action==CMD_SHORT_HELP) return;
+    if(action==CMD_LONG_HELP) {
+        printf("Assignment 5\n\n"
+               "Usage: bbaiju1692_a5 <status>\n"
+               "  status = 1=start, 0=stop\n"
+               "  Press blue button to stop watchdog refresh\n"
+               "  Board will reboot after watchdog times out\n"
+               );
+        return;
+    }
+
+    int status, num_skip, direction;
+
+    /* Get status from user */
+    if(fetch_uint32_arg((uint32_t *)&status)) {
+        status = 1;        /* Default: start running */
+    }
+
+    /* Get num_skip from user */
+    if(fetch_uint32_arg((uint32_t *)&num_skip)) {
+        num_skip = 5;      /* Default */
+    }
+
+    /* Get direction from user */
+    if(fetch_uint32_arg((uint32_t *)&direction)) {
+        direction = 1;     /* Default */
+    }
+
+    /* Call assembly function */
+    printf("bbaiju1692_a5 returned: %d\n",
+        bbaiju1692_a5(status, num_skip, direction));
+}
+ADD_CMD("bbaiju1692_a5", A5_bbaiju1692, "Test the A5 function")
+
+
+
 /*
  * Lab9_bbaiju1692 - Low Level GPIO LED control
  * Directly manipulates GPIO register to control LEDs
